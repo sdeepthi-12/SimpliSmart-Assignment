@@ -1,0 +1,42 @@
+name: Deploy to Kubernetes on Windows
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
+
+jobs:
+  deploy:
+    runs-on: windows-latest  # Use a Windows runner
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Install Kubectl on Windows
+      run: |
+        curl -LO "https://dl.k8s.io/release/v1.27.0/bin/windows/amd64/kubectl.exe"
+        mkdir -Force C:\kubectl
+        Move-Item -Path .\kubectl.exe -Destination C:\kubectl\
+        [System.Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';C:\kubectl', [System.EnvironmentVariableTarget]::Process)
+        kubectl version --client
+
+    - name: Configure Kubeconfig on Windows
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+      run: |
+        mkdir -Force $HOME\.kube
+        echo $env:KUBE_CONFIG_DATA > $HOME\.kube\config
+
+    - name: Deploy Nginx Deployment
+      run: |
+        kubectl apply -f deployment/nginx-deployment.yaml
+        kubectl apply -f deployment/nginx-service.yaml
+
+    - name: Deploy KEDA ScaledObject
+      run: |
+        kubectl apply -f deployment/keda-scaledobject.yaml
+
+    - name: Verify Deployment
+      run: |
+        kubectl get all -n nginx-namespace
