@@ -1,107 +1,260 @@
-# SimpliSmart-Assignment
-Infrastructure Engineer Assignment
+# SimpliSmart Assignment
 
-Prerequisites
+## Prerequisites
 
--> Install kubectl on Windows 
-    https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/#install-kubectl-on-windows:~:text=avoid%20unforeseen%20issues.-,Install%20kubectl%20on%20Windows,-The%20following%20methods
+Ensure the following tools are installed and configured on your system:
 
-    Run this command to verify: kubectl version
+1. **kubectl**
 
--> Install DockerDesktop
-    https://docs.docker.com/desktop/setup/install/windows-install/
+   - Installation guide: [Install kubectl on Windows](https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/#install-kubectl-on-windows)
+   - Verify installation:
+     ```bash
+     kubectl version
+     ```
 
--> Install Minikube
-    https://minikube.sigs.k8s.io/docs/start/?arch=%2Fwindows%2Fx86-64%2Fstable%2F.exe+download
+2. **Docker Desktop**
 
-    Run this command to verify: minikube version
+   - Installation guide: [Install Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/)
 
--> Install helm
-    https://github.com/helm/helm/releases
+3. **Minikube**
 
-    Run this command to verify: helm version
+   - Installation guide: [Install Minikube](https://minikube.sigs.k8s.io/docs/start/?arch=%2Fwindows%2Fx86-64%2Fstable%2F.exe+download)
+   - Verify installation:
+     ```bash
+     minikube version
+     ```
 
-Note: Add the path to environment variables (minikube, helm, minikube)
+4. **Helm**
 
-Step 1: Connect to the Kubernetes Cluster
+   - Installation guide: [Install Helm](https://github.com/helm/helm/releases)
+   - Verify installation:
+     ```bash
+     helm version
+     ```
 
--> Open/Run Docker Desktop
--> Run the minikube cluster
-    >> minikube start
--> Verify Minikube is running:
-    >> minikube status
--> Check connectivity to the cluster:
-    >> kubectl cluster-info
+### Note
 
-Step 2: Install Helm and KEDA
+Add the installation paths for Minikube, Helm, and kubectl to your system’s environment variables for ease of use.
 
--> Initialize helm
-    >>helm repo add bitnami https://charts.bitnami.com/bitnami
+---
 
--> Install KEDA Using Helm
-    >>helm repo add kedacore https://kedacore.github.io/charts
-    >>helm repo update
+## Step 1: Connect to the Kubernetes Cluster
 
--> Install KEDA into the cluster:
-    >> helm install keda kedacore/keda --namespace keda --create-namespace
+1. **Start Docker Desktop** to enable the container runtime.
+2. **Start Minikube Cluster**:
+   ```bash
+   minikube start
+   ```
+3. Verify Minikube is running:
+   ```bash
+   minikube status
+   ```
+4. Check cluster connectivity:
+   ```bash
+   kubectl cluster-info
+   ```
 
--> Verify KEDA Installation
-    >> kubectl get pods -n keda
+---
 
--> Check the custom resource definitions (CRDs) installed by KEDA:
-    >> kubectl get crds
+## Step 2: Install Helm and KEDA
 
+1. **Initialize Helm**:
 
-Step 3: Create Deployment
+   ```bash
+   helm repo add bitnami https://charts.bitnami.com/bitnami
+   ```
 
--> Public image and tag from DockerHub: nginx:1.23.0
--> Define a Namespace: nginx-namespace.yaml
-    >>kubectl apply -f nginx-namespace.yaml
--> Define the Deployment: nginx-deployment.yaml
-    >> kubectl apply -f nginx-deployment.yaml
-    >> kubectl get pods -n nginx-namespace   #verify the Service
--> Define the Service: nginx-service.yaml
-    >> kubectl apply -f nginx-service.yaml
-    >> kubectl get svc -n nginx-namespace #verify the deployment
--> Add KEDA Autoscaling: nginx-scaledobject.yaml (used a CPU trigger as metric)
-    >> kubectl apply -f nginx-scaledobject.yaml
-    >> kubectl get scaledobject -n nginx-namespace #Verify the ScaledObject
--> Deployment Details
-    >> kubectl describe deployment nginx-deployment -n nginx-namespace
-    >> kubectl get hpa -n nginx-namespace  # check replica count in Autoscaling
+2. **Install KEDA Using Helm**:
 
+   ```bash
+   helm repo add kedacore https://kedacore.github.io/charts
+   helm repo update
+   helm install keda kedacore/keda --namespace keda --create-namespace
+   ```
 
-To Test the Autoscaling:
+3. Verify KEDA installation:
 
--> We can use Stress tool to simulate high CPU usage
--> Pull a Stress Testing Image from DockerHub
-    >> docker pull polinux/stress
--> Deploy a a separate pod that runs the stress workload : stress-pod.yaml
--> Add a Sidecar Container to NGINX Deployment - Uses one CPU core (--cpu 1) for 60 seconds to generate load.
-    >> - name: stress
-          image: polinux/stress
-          command: ["stress"]
-          args: ["--cpu", "1", "--timeout", "60s"] # Adjust CPU and duration
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "200m"
-              memory: "256Mi"
+   ```bash
+   kubectl get pods -n keda
+   ```
 
--> Apply the Stress Pod:
-    >> kubectl apply -f stress-pod.yaml
-    >> kubectl apply -f nginx-deployment.yaml
--> Observer the autoscaling behavior:
-    >> kubectl get pods -n nginx-namespace --watch   # Watch Pod Scaling
-    >> kubectl describe scaledobject nginx-scaledobject -n nginx-namespace # View ScaledObject Status
+4. Check the Custom Resource Definitions (CRDs) installed by KEDA:
 
+   ```bash
+   kubectl get crds
+   ```
 
+---
 
+## Step 3: Deploy NGINX with Autoscaling
 
+1. **Create Namespace**: Apply the namespace configuration:
 
+   ```bash
+   kubectl apply -f nginx-namespace.yaml
+   ```
 
+2. **Deploy NGINX**:
 
+   - Apply the deployment configuration:
+     ```bash
+     kubectl apply -f nginx-deployment.yaml
+     ```
+   - Verify deployment:
+     ```bash
+     kubectl get pods -n nginx-namespace
+     ```
 
+3. **Create NGINX Service**:
+
+   - Apply the service configuration:
+     ```bash
+     kubectl apply -f nginx-service.yaml
+     ```
+   - Verify the service:
+     ```bash
+     kubectl get svc -n nginx-namespace
+     ```
+
+4. **Configure Autoscaling with KEDA**:
+
+   - Apply the ScaledObject configuration:
+     ```bash
+     kubectl apply -f nginx-scaledobject.yaml
+     ```
+   - Verify the ScaledObject:
+     ```bash
+     kubectl get scaledobject -n nginx-namespace
+     ```
+   - Check deployment details:
+     ```bash
+     kubectl describe deployment nginx-deployment -n nginx-namespace
+     ```
+   - Check Horizontal Pod Autoscaler (HPA):
+     ```bash
+     kubectl get hpa -n nginx-namespace
+     ```
+
+---
+
+## Step 4: Test Autoscaling
+
+1. **Simulate Load with Stress Tool**:
+
+   - Deploy a stress-testing pod:
+     ```bash
+     kubectl apply -f stress-test.yaml
+     ```
+
+2. **Monitor Autoscaling Behavior**:
+
+   - Watch the pods scale:
+     ```bash
+     kubectl get pods -n nginx-namespace --watch
+     ```
+   - Describe the ScaledObject status:
+     ```bash
+     kubectl describe scaledobject nginx-scaledobject -n nginx-namespace
+     ```
+
+---
+
+## Step 5: Check Health Status
+
+1. **Run Health Check Script**:
+
+   - Execute the Python script with the required arguments:
+     ```bash
+     python check_health.py --namespace nginx-namespace --deployment nginx-deployment
+     ```
+
+2. **Example Output**:
+
+   ```json
+   Health Status:
+   {
+       "deployment": {
+           "replicas": 4,
+           "available_replicas": 2,
+           "ready": false,
+           "issues": [
+               "Mismatch: 2/4 replicas available.",
+               "Deployment is not ready."
+           ]
+       },
+       "pods": [
+           {
+               "name": "nginx-deployment-559d76fc7b-f4ljc",
+               "status": "Running",
+               "reason": ""
+           },
+           {
+               "name": "nginx-deployment-559d76fc7b-mqcpc",
+               "status": "Running",
+               "reason": ""
+           },
+           {
+               "name": "nginx-deployment-5c96bb98f8-rpmtr",
+               "status": "Pending",
+               "reason": "ImagePullBackOff"
+           },
+           {
+               "name": "nginx-deployment-5c96bb98f8-t49jj",
+               "status": "Pending",
+               "reason": "ImagePullBackOff"
+           }
+       ],
+       "metrics": "Metrics API unavailable",
+       "issues": [
+           "Mismatch: 2/4 replicas available.",
+           "Deployment is not ready.",
+           "Pod nginx-deployment-5c96bb98f8-rpmtr is in 'Pending' state. Reason: ImagePullBackOff"
+       ]
+   }
+   ```
+
+3. **Debug Issues**:
+
+   - View logs for problematic pods:
+     ```bash
+     kubectl logs <pod_name> -n nginx-namespace
+     ```
+   - Check pod events:
+     ```bash
+     kubectl describe pod <pod_name> -n nginx-namespace
+     ```
+
+---
+
+## Step 6: Access NGINX
+
+1. **Access via Minikube IP**:
+
+   - Get the Minikube IP:
+     ```bash
+     minikube ip
+     ```
+   - Get the NodePort:
+     ```bash
+     kubectl get service -n nginx-namespace
+     ```
+   - Access NGINX using:
+     ```
+     curl http://<minikube_ip>:<node_port>
+     ```
+
+2. **Create a Tunnel (if necessary)**:
+
+   ```bash
+   minikube tunnel
+   ```
+
+   - Use port forwarding:
+     ```bash
+     kubectl port-forward svc/nginx-service 8080:80 -n nginx-namespace
+     ```
+   - Access at:
+     ```
+     http://localhost:8080
+     ```
 
