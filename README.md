@@ -141,12 +141,35 @@ Add the installation paths for Minikube, Helm, and kubectl to your system’s en
 
 1. **Simulate Load with Stress Tool**:
 
-   - Deploy a stress-testing pod:
+   - Pull a stress-testing image from DockerHub:
      ```bash
-     kubectl apply -f stress-test.yaml
+     docker pull polinux/stress
      ```
 
-2. **Monitor Autoscaling Behavior**:
+   - Deploy a separate pod that runs the stress workload:
+     ```bash
+     kubectl apply -f stress-pod.yaml
+     ```
+
+2. **Add a Sidecar Container to NGINX Deployment**:
+
+   - Modify the NGINX deployment to include a sidecar container that generates CPU load. Example configuration:
+
+     ```yaml
+     - name: stress
+       image: polinux/stress
+       command: ["stress"]
+       args: ["--cpu", "1", "--timeout", "60s"] # Adjust CPU and duration
+       resources:
+         requests:
+           cpu: "100m"
+           memory: "128Mi"
+         limits:
+           cpu: "200m"
+           memory: "256Mi"
+     ```
+
+3. **Monitor Autoscaling Behavior**:
 
    - Watch the pods scale:
      ```bash
