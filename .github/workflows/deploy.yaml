@@ -52,6 +52,3 @@ jobs:
       run: |
         kubectl get all -n nginx-namespace
         kubectl describe pods -n nginx-namespace
-    ```
-
----
