@@ -18,25 +18,37 @@ jobs:
         curl -LO "https://dl.k8s.io/release/v1.27.0/bin/windows/amd64/kubectl.exe"
         mkdir -Force C:\kubectl
         Move-Item -Path .\kubectl.exe -Destination C:\kubectl\
-        [System.Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';C:\kubectl', [System.EnvironmentVariableTarget]::Process)
+        [System.Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';C:\kubectl', [System.EnvironmentVariableTarget]::Machine)
         kubectl version --client
 
     - name: Configure Kubeconfig on Windows
       env:
         KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
       run: |
+        $decodedConfig = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:KUBE_CONFIG_DATA))
         mkdir -Force $HOME\.kube
-        echo $env:KUBE_CONFIG_DATA > $HOME\.kube\config
+        Set-Content -Path "$HOME\.kube\config" -Value $decodedConfig
+        kubectl config view  # Verify kubeconfig setup
+
+    - name: Verify Cluster Connectivity
+      run: |
+        kubectl cluster-info
+        kubectl get nodes
 
     - name: Deploy Nginx Deployment
       run: |
-        kubectl apply -f deployment/nginx-deployment.yaml
-        kubectl apply -f deployment/nginx-service.yaml
+        kubectl apply -f deployment/nginx-deployment.yaml --namespace nginx-namespace
+        kubectl apply -f deployment/nginx-service.yaml --namespace nginx-namespace
 
     - name: Deploy KEDA ScaledObject
       run: |
-        kubectl apply -f deployment/keda-scaledobject.yaml
+        kubectl apply -f deployment/keda-scaledobject.yaml --namespace nginx-namespace
 
     - name: Verify Deployment
       run: |
         kubectl get all -n nginx-namespace
+
+    - name: Check Logs and Pods
+      run: |
+        kubectl logs -l app=nginx -n nginx-namespace
+        kubectl describe pods -n nginx-namespace
