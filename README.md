@@ -155,7 +155,7 @@ Add the installation paths for Minikube, Helm, and kubectl to your system’s en
 
 2. **Add a Sidecar Container to NGINX Deployment**:
 
-   - Modify the NGINX deployment to include a sidecar container that generates CPU load. Example configuration:
+   - Modify the NGINX deployment to include a sidecar container that generates CPU load. Example configuration: Uses one CPU core (--cpu 1) for 60 seconds to generate load.
 
      ```yaml
      - name: stress
