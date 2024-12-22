@@ -3,11 +3,11 @@ name: Deploy to Kubernetes on Windows
 on:
   push:
     branches:
-      - main  # Trigger on push to the main branch
+      - main
 
 jobs:
   deploy:
-    runs-on: windows-latest  # Use a Windows runner
+    runs-on: windows-latest
 
     steps:
     - name: Checkout Code
@@ -28,12 +28,16 @@ jobs:
         $decodedConfig = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:KUBE_CONFIG_DATA))
         mkdir -Force $HOME\.kube
         Set-Content -Path "$HOME\.kube\config" -Value $decodedConfig
-        kubectl config view  # Verify kubeconfig setup
+        kubectl config view
 
     - name: Verify Cluster Connectivity
       run: |
         kubectl cluster-info
         kubectl get nodes
+
+    - name: Create Namespace
+      run: |
+        kubectl create namespace nginx-namespace || echo "Namespace already exists"
 
     - name: Deploy Nginx Deployment
       run: |
@@ -44,11 +48,4 @@ jobs:
       run: |
         kubectl apply -f deployment/keda-scaledobject.yaml --namespace nginx-namespace
 
-    - name: Verify Deployment
-      run: |
-        kubectl get all -n nginx-namespace
-
-    - name: Check Logs and Pods
-      run: |
-        kubectl logs -l app=nginx -n nginx-namespace
-        kubectl describe pods -n nginx-namespace
+    - name
