@@ -191,7 +191,10 @@ Add the installation paths for Minikube, Helm, and kubectl to your system’s en
 ## Step 5: Check Health Status
 
 1. **Run Health Check Script**:
-
+   - To enable metrics for autoscaling and other monitoring tasks: This will allow you to access resource metrics, which are necessary for the autoscaling functionality
+     ```bash
+     minikube addons enable metrics-server
+     ```
    - Execute the Python script with the required arguments:
      ```bash
      python check_health.py --namespace nginx-namespace --deployment nginx-deployment
