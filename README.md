@@ -135,6 +135,8 @@ Add the installation paths for Minikube, Helm, and kubectl to your system’s en
      kubectl get hpa -n nginx-namespace
      ```
 
+   - **Public image and tag from DockerHub**: `nginx:1.23.0`
+
 ---
 
 ## Step 4: Test Autoscaling
