@@ -170,6 +170,10 @@ Add the installation paths for Minikube, Helm, and kubectl to your system’s en
            cpu: "200m"
            memory: "256Mi"
      ```
+   - Update the nginx-deployment.yaml
+     ```bash
+     kubectl apply -f nginx-deployment.yaml
+     ```
 
 3. **Monitor Autoscaling Behavior**:
 
