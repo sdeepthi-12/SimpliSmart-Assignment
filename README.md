@@ -237,7 +237,8 @@ Add the installation paths for Minikube, Helm, and kubectl to your system’s en
        "issues": [
            "Mismatch: 2/4 replicas available.",
            "Deployment is not ready.",
-           "Pod nginx-deployment-5c96bb98f8-rpmtr is in 'Pending' state. Reason: ImagePullBackOff"
+           "Pod nginx-deployment-5c96bb98f8-rpmtr is in 'Pending' state. Reason: ImagePullBackOff",
+           "Pod nginx-deployment-5c96bb98f8-t49jj is in 'Pending' state. Reason: ImagePullBackOff"
        ]
    }
    ```
